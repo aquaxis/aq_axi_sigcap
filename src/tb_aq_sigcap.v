@@ -1,198 +1,222 @@
 `timescale 1ns / 1ps
 module tb_aq_sigcap;
 
-   reg RST_N;
-   reg CLK;
+   // --------------------------------------------------
+   // AXI4 Lite Interface
+   // --------------------------------------------------
+   // Reset; Clock
+   reg         S_AXI_ARESETN;
+   reg         S_AXI_ACLK;
 
-   wire LOCAL_CS;
-   wire LOCAL_RNW;
+   // Write Address Channel
+   wire [15:0] S_AXI_AWADDR;
+   wire [3:0]  S_AXI_AWCACHE;
+   wire [2:0]  S_AXI_AWPROT;
+   wire        S_AXI_AWVALID;
+   wire        S_AXI_AWREADY;
 
-   wire LOCAL_ACK;
-   wire [31:0] LOCAL_ADDR;
-   wire [3:0]  LOCAL_BE;
-   wire [31:0] LOCAL_WDATA;
-   wire [31:0] LOCAL_RDATA;
+   // Write Data Channel
+   wire [31:0] S_AXI_WDATA;
+   wire [3:0]  S_AXI_WSTRB;
+   wire        S_AXI_WVALID;
+   wire        S_AXI_WREADY;
 
-   reg 		   CAP_CLK;
-   reg [31:0]  CAP_DATA;
-   
-   aq_sigcap u_aq_sigcap
-	 (
-	  .RST_N(RST_N),
-	  .CLK(CLK),
+   // Write Response Channel
+   wire        S_AXI_BVALID;
+   wire        S_AXI_BREADY;
+   wire [1:0]  S_AXI_BRESP;
 
-	  .LOCAL_CS(LOCAL_CS),
-	  .LOCAL_RNW(LOCAL_RNW),
-	  .LOCAL_ACK(LOCAL_ACK),
-	  .LOCAL_ADDR(LOCAL_ADDR),
-	  .LOCAL_BE(LOCAL_BE),
-	  .LOCAL_WDATA(LOCAL_WDATA),
-	  .LOCAL_RDATA(LOCAL_RDATA),
+   // Read Address Channel
+   wire [15:0] S_AXI_ARADDR;
+   wire [3:0]  S_AXI_ARCACHE;
+   wire [2:0]  S_AXI_ARPROT;
+   wire        S_AXI_ARVALID;
+   wire        S_AXI_ARREADY;
 
-	  .CAP_CLK(CAP_CLK),
-	  .CAP_DATA(CAP_DATA)
-	  );
+   // Read Data Channel
+   wire [31:0] S_AXI_RDATA;
+   wire [1:0]  S_AXI_RRESP;
+   wire        S_AXI_RVALID;
+   wire        S_AXI_RREADY;
 
-   local_bus_model u_local
-	 (
-	  .CLK(CLK),
+  reg        CAP_CLK;
+  reg [31:0]  CAP_DATA;
 
-	  .LOCAL_CS(LOCAL_CS),
-	  .LOCAL_RNW(LOCAL_RNW),
-	  .LOCAL_ACK(LOCAL_ACK),
-	  .LOCAL_ADDR(LOCAL_ADDR),
-	  .LOCAL_BE(LOCAL_BE),
-	  .LOCAL_WDATA(LOCAL_WDATA),
-	  .LOCAL_RDATA(LOCAL_RDATA)   
-	  );
+  reg [31:0] rddata;
 
-   localparam CLK100M = 10;
+  aq_sigcap u_aq_sigcap
+  (
+      // --------------------------------------------------
+      // AXI4 Lite Interface
+      // --------------------------------------------------
+      // Reset, Clock
+      .S_AXI_ARESETN ( S_AXI_ARESETN ),
+      .S_AXI_ACLK    ( S_AXI_ACLK    ),
 
+      // Write Address Channel
+      .S_AXI_AWADDR  ( S_AXI_AWADDR  ),
+      .S_AXI_AWCACHE ( S_AXI_AWCACHE ),
+      .S_AXI_AWPROT  ( S_AXI_AWPROT  ),
+      .S_AXI_AWVALID ( S_AXI_AWVALID ),
+      .S_AXI_AWREADY ( S_AXI_AWREADY ),
+
+      // Write Data Channel
+      .S_AXI_WDATA   ( S_AXI_WDATA   ),
+      .S_AXI_WSTRB   ( S_AXI_WSTRB   ),
+      .S_AXI_WVALID  ( S_AXI_WVALID  ),
+      .S_AXI_WREADY  ( S_AXI_WREADY  ),
+
+      // Write Response Channel
+      .S_AXI_BVALID  ( S_AXI_BVALID  ),
+      .S_AXI_BREADY  ( S_AXI_BREADY  ),
+      .S_AXI_BRESP   ( S_AXI_BRESP   ),
+
+      // Read Address Channel
+      .S_AXI_ARADDR  ( S_AXI_ARADDR  ),
+      .S_AXI_ARCACHE ( S_AXI_ARCACHE ),
+      .S_AXI_ARPROT  ( S_AXI_ARPROT  ),
+      .S_AXI_ARVALID ( S_AXI_ARVALID ),
+      .S_AXI_ARREADY ( S_AXI_ARREADY ),
+
+      // Read Data Channel
+      .S_AXI_RDATA   ( S_AXI_RDATA   ),
+      .S_AXI_RRESP   ( S_AXI_RRESP   ),
+      .S_AXI_RVALID  ( S_AXI_RVALID  ),
+      .S_AXI_RREADY  ( S_AXI_RREADY  ),
+
+
+    .CAP_CLK(CAP_CLK),
+    .CAP_DATA(CAP_DATA)
+  );
+
+   tb_axi_ls_master_model axi_ls_master
+     (
+      // Reset, Clock
+      .ARESETN       ( S_AXI_ARESETN ),
+      .ACLK          ( S_AXI_ACLK    ),
+
+      // Write Address Channel
+      .S_AXI_AWADDR  ( S_AXI_AWADDR  ),
+      .S_AXI_AWCACHE ( S_AXI_AWCACHE ),
+      .S_AXI_AWPROT  ( S_AXI_AWPROT  ),
+      .S_AXI_AWVALID ( S_AXI_AWVALID ),
+      .S_AXI_AWREADY ( S_AXI_AWREADY ),
+
+      // Write Data Channel
+      .S_AXI_WDATA   ( S_AXI_WDATA   ),
+      .S_AXI_WSTRB   ( S_AXI_WSTRB   ),
+      .S_AXI_WVALID  ( S_AXI_WVALID  ),
+      .S_AXI_WREADY  ( S_AXI_WREADY  ),
+
+      // Write Response Channel
+      .S_AXI_BVALID  ( S_AXI_BVALID  ),
+      .S_AXI_BREADY  ( S_AXI_BREADY  ),
+      .S_AXI_BRESP   ( S_AXI_BRESP   ),
+
+      // Read Address Channe
+      .S_AXI_ARADDR  ( S_AXI_ARADDR  ),
+      .S_AXI_ARCACHE ( S_AXI_ARCACHE ),
+      .S_AXI_ARPROT  ( S_AXI_ARPROT  ),
+      .S_AXI_ARVALID ( S_AXI_ARVALID ),
+      .S_AXI_ARREADY ( S_AXI_ARREADY ),
+
+      // Read Data Channel
+      .S_AXI_RDATA   ( S_AXI_RDATA   ),
+      .S_AXI_RRESP   ( S_AXI_RRESP   ),
+      .S_AXI_RVALID  ( S_AXI_RVALID  ),
+      .S_AXI_RREADY  ( S_AXI_RREADY  )
+      );
+
+  localparam CLK100M = 10;
+
+   // Initialize and Free for Reset
    initial begin
-	  RST_N <= 1'b0;
-	  CLK <= 1'b0;
+      S_AXI_ARESETN <= 1'b0;
+      S_AXI_ACLK    <= 1'b0;
+
 	  #100;
 
-	  @(posedge CLK);
-	  RST_N <= 1'b1;
+	  @(posedge S_AXI_ACLK);
+      S_AXI_ARESETN <= 1'b1;
+	  $display("============================================================");
 	  $display("Simulatin Start");
+	  $display("============================================================");
    end
 
+   // Clock
    always  begin
-	  #(CLK100M/2) CLK <= ~CLK;
+	  #(CLK100M/2) S_AXI_ACLK <= ~S_AXI_ACLK;
    end
 
-   initial begin
-	  wait(LOCAL_ADDR == 32'hFFFF_FFFF);
-	  $display("Simulatin Finish");
-	  $finish();
-   end
 
-   initial begin
-	  wait(RST_N);
+  integer rslt = 0;
 
-	  @(posedge CLK);
+  initial begin
+    wait(S_AXI_ARESETN);
 
-	  $display("Process Start");
-	  
-	  u_local.wdata(32'h0000_0004, 32'h0000_0004);
-	  u_local.wdata(32'h0000_0008, 32'h0000_0100);
-	  u_local.wdata(32'h0000_0000, 32'h0000_0001);
+    @(posedge S_AXI_ACLK);
 
-	  u_local.rdata(32'h0000_0000);
-	  
-	  repeat (2000) @(posedge CAP_CLK);
-	  
-	  u_local.rdata(32'h0000_0000);
+    $display("Process Start");
+    
+    axi_ls_master.wrdata(32'h0000_0004, 32'h0000_0004);
+    axi_ls_master.wrdata(32'h0000_0008, 32'h0000_0100);
+    axi_ls_master.wrdata(32'h0000_0000, 32'h0000_0001);
 
-	  u_local.rdata(32'h0000_1000);
-	  u_local.rdata(32'h0000_1004);
-	  u_local.rdata(32'h0000_1008);
-	  u_local.rdata(32'h0000_100C);
-	  u_local.rdata(32'h0000_1010);
-	  u_local.rdata(32'h0000_1014);
-	  u_local.rdata(32'h0000_1018);
-	  u_local.rdata(32'h0000_101C);
-	  u_local.rdata(32'h0000_13D0);
-	  u_local.rdata(32'h0000_13D4);
-	  u_local.rdata(32'h0000_13D8);
-	  u_local.rdata(32'h0000_13DC);
-	  u_local.rdata(32'h0000_13E0);
-	  u_local.rdata(32'h0000_13E4);
-	  u_local.rdata(32'h0000_13E8);
-	  u_local.rdata(32'h0000_13EC);
-	  u_local.rdata(32'h0000_13F0);
-	  u_local.rdata(32'h0000_13F4);
-	  u_local.rdata(32'h0000_13F8);
-	  u_local.rdata(32'h0000_13FC);
+    axi_ls_master.rddata(32'h0000_0000, rddata);
+    
+    rslt = 0;
+    while(!rslt) begin
+      axi_ls_master.rddata(32'h0000_0000, rddata);
+      if(rddata & 32'h80000000) rslt = 1;
+      @(posedge CAP_CLK);
+    end
+    
+    axi_ls_master.rddata(32'h0000_0000, rddata);
+    axi_ls_master.rddata(32'h0000_000c, rddata);
 
-	  repeat (10) @(posedge CAP_CLK);
+    axi_ls_master.rddata(32'h0000_1000, rddata);
+    axi_ls_master.rddata(32'h0000_1004, rddata);
+    axi_ls_master.rddata(32'h0000_1008, rddata);
+    axi_ls_master.rddata(32'h0000_100C, rddata);
+    axi_ls_master.rddata(32'h0000_1010, rddata);
+    axi_ls_master.rddata(32'h0000_1014, rddata);
+    axi_ls_master.rddata(32'h0000_1018, rddata);
+    axi_ls_master.rddata(32'h0000_101C, rddata);
+    axi_ls_master.rddata(32'h0000_13D0, rddata);
+    axi_ls_master.rddata(32'h0000_13D4, rddata);
+    axi_ls_master.rddata(32'h0000_13D8, rddata);
+    axi_ls_master.rddata(32'h0000_13DC, rddata);
+    axi_ls_master.rddata(32'h0000_13E0, rddata);
+    axi_ls_master.rddata(32'h0000_13E4, rddata);
+    axi_ls_master.rddata(32'h0000_13E8, rddata);
+    axi_ls_master.rddata(32'h0000_13EC, rddata);
+    axi_ls_master.rddata(32'h0000_13F0, rddata);
+    axi_ls_master.rddata(32'h0000_13F4, rddata);
+    axi_ls_master.rddata(32'h0000_13F8, rddata);
+    axi_ls_master.rddata(32'h0000_13FC, rddata);
 
-	  u_local.rdata(32'hFFFF_FFFF);
-	  
-   end
+    repeat (10) @(posedge CAP_CLK);
+    
+    $display("Simulatin Finish");
+    $finish();
+  end
    
 
-   initial begin
-	  CAP_CLK <= 1'b0;
-   end
+  initial begin
+    CAP_CLK <= 1'b0;
+  end
    
-   localparam CLK25M = 40;
-   always  begin
-	  #(CLK25M/2) CAP_CLK <= ~CAP_CLK;
-   end
+  localparam CLK25M = 40;
+  always  begin
+    #(CLK25M/2) CAP_CLK <= ~CAP_CLK;
+  end
 
-   always @(posedge CAP_CLK or negedge RST_N) begin
-	  if(!RST_N) begin
-		 CAP_DATA <= 32'd0;
-	  end else begin
-		 CAP_DATA <= CAP_DATA + 32'd1;
-	  end
-   end
+  always @(posedge CAP_CLK or negedge S_AXI_ARESETN) begin
+    if(!S_AXI_ARESETN) begin
+      CAP_DATA <= 32'd0;
+    end else begin
+      CAP_DATA <= CAP_DATA + 32'd1;
+    end
+  end
 
-endmodule
-
-module local_bus_model
-  (
-   input CLK,
-
-   output reg LOCAL_CS,
-   output reg LOCAL_RNW,
-   input LOCAL_ACK,
-   output reg [31:0] LOCAL_ADDR,
-   output reg [3:0] LOCAL_BE,
-   output reg [31:0] LOCAL_WDATA,
-   input [31:0] LOCAL_RDATA   
-   );
-   
-   initial begin
-	  LOCAL_CS = 1'b0;
-	  LOCAL_ADDR[31:0] = 32'd0;
-	  LOCAL_BE[3:0] = 4'd0;
-	  LOCAL_WDATA = 32'd0;
-	  LOCAL_RNW = 1'b0;
-   end
-   
-   task wdata;
-	  input [31:0] addr;
-	  input [31:0] data;
-	  begin
-		 @(negedge CLK);
-
-		 LOCAL_CS <= 1'b1;
-		 LOCAL_ADDR <= addr;
-		 LOCAL_RNW <= 1'b0;
-		 LOCAL_WDATA <= data;
-		 $display("LOCAL Write[%08X]: %08X", addr, LOCAL_WDATA);
-
-		 @(negedge CLK);
-
-		 wait(LOCAL_ACK);
-		 LOCAL_CS <= 1'b0;
-		 LOCAL_ADDR <= 32'd0;
-		 LOCAL_WDATA <= 32'd0;
-
-		 @(negedge CLK);
-	  end
-   endtask
-
-   task rdata;
-	  input [31:0] addr;
-	  begin
-		 @(negedge CLK);
-
-		 LOCAL_CS <= 1'b1;
-		 LOCAL_ADDR <= addr;
-		 LOCAL_RNW <= 1'b1;
-
-		 @(negedge CLK);
-
-		 wait(LOCAL_ACK);
-		 LOCAL_CS <= 1'b0;
-		 $display("LOCAL Read[%08X]: %08X", addr, LOCAL_RDATA);
-
-		 @(negedge CLK);
-	  end
-   endtask   
-   
 endmodule

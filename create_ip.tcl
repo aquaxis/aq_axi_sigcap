@@ -5,7 +5,6 @@ create_project $PROJECT_NAME ./$PROJECT_NAME -part $PART_NAME -force
 
 set FILES [list \
            ../$PROJECT_NAME/src/aq_sigcap.v \
-           ../$PROJECT_NAME/src/aq_sigcap_axi_ls.v \
            ../$PROJECT_NAME/src/aq_sigcap_ctl.v \
            ../$PROJECT_NAME/src/aq_sigcap_mem.v \
           ]
