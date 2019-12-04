@@ -1,4 +1,4 @@
-set PROJECT_NAME aq_sigcap
+set PROJECT_NAME aq_axi_sigcap
 set PART_NAME xc7z020clg400-1
 
 create_project $PROJECT_NAME ./$PROJECT_NAME -part $PART_NAME -force
